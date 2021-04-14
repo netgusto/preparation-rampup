@@ -23,8 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	for round := 1; round <= 10; round++ {
-		println("# ROUND ", round)
+	for round := 0; round < 10; round++ {
 		for _, url := range urls {
 			ping := probeURL(url, nbTriesPerURL)
 			fmt.Printf("%+v\n", ping)
