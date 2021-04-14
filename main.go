@@ -13,12 +13,12 @@ import (
 const nbTriesPerURL = 3
 
 func main() {
-	data, err := ioutil.ReadFile("./urls.txt")
+	data, err := ioutil.ReadFile("/Users/jeromeschneider/Code/rampup/urls.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	urls, err := getURLs(data)
+	urls, err := getURLList(data)
 	if err != nil {
 		panic(err)
 	}

@@ -45,7 +45,7 @@ func Test_ProbeURL_with_unresolvable_url(t *testing.T) {
 	actualPing := probeURL("https://this-domain-does-not-exist", maxTries)
 
 	if actualPing.StatusCode != nil {
-		t.Fatalf(`Expected the test to yield nil HTTP status code 200 but was %v`, actualPing.StatusCode)
+		t.Fatalf(`Expected the test to yield nil HTTP status code but was %v`, actualPing.StatusCode)
 	}
 
 	if actualPing.TransportError == nil {

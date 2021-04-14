@@ -2,7 +2,7 @@ package main
 
 import "strings"
 
-func getURLs(data []byte) ([]string, error) {
+func getURLList(data []byte) ([]string, error) {
 	lines := strings.Split(string(data), "\n")
 	return removeEmptyLines(lines), nil
 }
