@@ -20,8 +20,7 @@ func main() {
 		panic(err)
 	}
 
-	for round := 1; round <= 10; round++ {
-		println("# ROUND ", round)
+	for round := 0; round < 10; round++ {
 		for _, url := range urls {
 			code, duration, err := probe(url)
 
