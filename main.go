@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"sync"
 )
 
 // List of urls in a file
@@ -25,42 +24,25 @@ func main() {
 	}
 
 	urlGetter := URLGetterReal{}
-
-	pingStream := make(chan Ping)
-	urlStream := make(chan string)
-	done := make(chan bool)
-
-	wg := &sync.WaitGroup{}
-
-	for w := 0; w < 4; w++ {
-		go worker(w, urlStream, pingStream, wg, nbTriesPerURL, urlGetter)
-	}
-
-	go func() {
-		for ping := range pingStream {
-			fmt.Printf("%+v\n", ping)
-			wg.Done()
-		}
-
-		done <- true
-	}()
-
-	for round := 1; round <= 10; round++ {
-		for _, url := range urls {
-			urlStream <- url
-		}
-	}
-
-	wg.Wait()
-	close(pingStream)
-	<-done
+	run(urlGetter, urls)
 
 	fmt.Println("DONE!")
 }
 
-func worker(id int, urls <-chan string, pings chan<- Ping, wg *sync.WaitGroup, nbTriesPerURL int, urlGetter URLGetter) {
-	for url := range urls {
-		wg.Add(1)
-		pings <- probeURL(url, nbTriesPerURL, urlGetter)
-	}
+func run(urlGetter URLGetter, urls []string) {
+	pingStream := make(chan Ping)
+	doneConsuming := make(chan interface{})
+	go func() {
+		// consume ping stream
+		for ping := range pingStream {
+			fmt.Printf("%+v\n", ping)
+		}
+
+		close(doneConsuming)
+	}()
+
+	probeLoop(urlGetter, urls, 4, 10, pingStream)
+
+	close(pingStream)
+	<-doneConsuming
 }
