@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // List of urls in a file
@@ -13,9 +10,15 @@ import (
 // loop for each url, call function that calls the url and check HTTP code
 // displays the result on stdout (url, call ms, status code, OK or KO)
 
-func main() {
+const nbTriesPerURL = 3
 
-	urls, err := getURLs()
+func main() {
+	data, err := ioutil.ReadFile("./urls.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	urls, err := getURLs(data)
 	if err != nil {
 		panic(err)
 	}
@@ -23,45 +26,8 @@ func main() {
 	for round := 1; round <= 10; round++ {
 		println("# ROUND ", round)
 		for _, url := range urls {
-			code, duration, err := probe(url)
-
-			var outcome string
-			if err == nil {
-				outcome = "SUCCESS"
-			} else {
-				outcome = "ERROR, " + err.Error()
-			}
-
-			fmt.Printf("%s; STATUS=%d; DURATION=%s; OUTCOME=%s\n", url, code, duration, outcome)
+			ping := probeURL(url, nbTriesPerURL)
+			fmt.Printf("%+v\n", ping)
 		}
 	}
-}
-
-func getURLs() ([]string, error) {
-	data, err := ioutil.ReadFile("./urls.txt")
-	if err != nil {
-		return nil, err
-	}
-
-	lines := strings.Split(string(data), "\n")
-	nonEmptyLines := []string{}
-	for _, line := range lines {
-		if len(strings.TrimSpace(line)) > 0 {
-			nonEmptyLines = append(nonEmptyLines, line)
-		}
-	}
-
-	return nonEmptyLines, nil
-}
-
-func probe(url string) (int, time.Duration, error) {
-	start := time.Now()
-	resp, err := http.Get(url)
-	duration := time.Since(start)
-
-	if err != nil {
-		return 0, duration, err
-	}
-
-	return resp.StatusCode, duration, nil
 }
