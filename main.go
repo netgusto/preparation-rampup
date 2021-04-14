@@ -45,7 +45,7 @@ func main() {
 		done <- true
 	}()
 
-	for round := 1; round <= 10; round++ {
+	for round := 0; round < 10; round++ {
 		for _, url := range urls {
 			urlStream <- url
 		}
