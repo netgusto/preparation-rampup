@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // List of urls in a file
@@ -31,18 +35,24 @@ func main() {
 
 func run(urlGetter URLGetter, urls []string) {
 	pingStream := make(chan Ping)
-	doneConsuming := make(chan interface{})
+
 	go func() {
 		// consume ping stream
 		for ping := range pingStream {
 			fmt.Printf("%+v\n", ping)
 		}
-
-		close(doneConsuming)
 	}()
 
-	probeLoop(urlGetter, urls, 4, 10, pingStream)
+	ctx, cancelFunc := context.WithCancel(context.TODO())
 
-	close(pingStream)
-	<-doneConsuming
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigs
+		cancelFunc()
+		println("CANCELLED!")
+	}()
+
+	probeLoop(ctx, urlGetter, urls, 4, 10, pingStream)
 }

@@ -1,30 +1,40 @@
 package main
 
-import "sync"
+import (
+	"context"
+)
 
-func probeLoop(urlGetter URLGetter, urls []string, nbWorkers int, nbRounds int, pingStream chan<- Ping) {
+func probeLoop(ctx context.Context, urlGetter URLGetter, urls []string, nbWorkers int, nbRounds int, pingStream chan<- Ping) {
 
-	wg := &sync.WaitGroup{}
-
+	workersCtx, cancelWorkers := context.WithCancel(context.Background())
 	urlStream := make(chan string)
 
 	for w := 0; w < nbWorkers; w++ {
-		go worker(w, wg, urlStream, pingStream, nbTriesPerURL, urlGetter)
+		go worker(workersCtx, w, urlStream, pingStream, nbTriesPerURL, urlGetter)
 	}
 
-	for round := 0; round <= nbRounds; round++ {
+	for {
 		for _, url := range urls {
-			wg.Add(1)
-			urlStream <- url
+			select {
+			case <-ctx.Done():
+				cancelWorkers()
+				return
+			default:
+				urlStream <- url
+			}
 		}
 	}
-
-	wg.Wait()
 }
 
-func worker(id int, wg *sync.WaitGroup, urlStream <-chan string, pingStream chan<- Ping, nbTriesPerURL int, urlGetter URLGetter) {
+func worker(ctx context.Context, id int, urlStream <-chan string, pingStream chan<- Ping, nbTriesPerURL int, urlGetter URLGetter) {
 	for url := range urlStream {
-		pingStream <- probeURL(url, nbTriesPerURL, urlGetter)
-		wg.Done()
+		ping := probeURL(url, nbTriesPerURL, urlGetter)
+
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			pingStream <- ping
+		}
 	}
 }
