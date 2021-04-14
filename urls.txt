@@ -1,0 +1,4 @@
+https://www.algolia.com
+https://d85-usw-1.algolia.net/1/isalive
+https://d85-usw-2.algolia.net/1/isalive
+https://d85-usw-3.algolia.net/1/isalive

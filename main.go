@@ -2,19 +2,23 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
-// List of urls in a file (in an array fine too)
+// List of urls in a file
 // Read the file
 // loop for each url, call function that calls the url and check HTTP code
 // displays the result on stdout (url, call ms, status code, OK or KO)
-// Write a synchronous HTTP probe the simplest way possible
 
 func main() {
 
-	urls := getURLs()
+	urls, err := getURLs()
+	if err != nil {
+		panic(err)
+	}
 
 	for round := 1; round <= 10; round++ {
 		println("# ROUND ", round)
@@ -33,13 +37,21 @@ func main() {
 	}
 }
 
-func getURLs() []string {
-	return []string{
-		"https://www.algolia.com",
-		"https://d85-usw-1.algolia.net/1/isalive",
-		"https://d85-usw-2.algolia.net/1/isalive",
-		"https://d85-usw-3.algolia.net/1/isalive",
+func getURLs() ([]string, error) {
+	data, err := ioutil.ReadFile("./urls.txt")
+	if err != nil {
+		return nil, err
 	}
+
+	lines := strings.Split(string(data), "\n")
+	nonEmptyLines := []string{}
+	for _, line := range lines {
+		if len(strings.TrimSpace(line)) > 0 {
+			nonEmptyLines = append(nonEmptyLines, line)
+		}
+	}
+
+	return nonEmptyLines, nil
 }
 
 func probe(url string) (int, time.Duration, error) {
