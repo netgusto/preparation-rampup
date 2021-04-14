@@ -25,8 +25,7 @@ func main() {
 
 	urlGetter := URLGetterReal{}
 
-	for round := 1; round <= 10; round++ {
-		println("# ROUND ", round)
+	for round := 0; round < 10; round++ {
 		for _, url := range urls {
 			ping := probeURL(url, nbTriesPerURL, urlGetter)
 			fmt.Printf("%+v\n", ping)
