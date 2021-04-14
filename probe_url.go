@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func probeURL(url string, maxTries int) Ping {
+func probeURL(url string, maxTries int, urlGetter URLGetter) Ping {
 
 	start := time.Now().Round(0)
 
@@ -16,7 +16,7 @@ func probeURL(url string, maxTries int) Ping {
 
 	for k := 0; k < maxTries; k++ {
 		tries++
-		code, duration, err = measureURLCall(url)
+		code, duration, err = urlGetter.GetURL(url)
 		if err == nil && code != nil && *code == http.StatusOK {
 			// we got one successful call
 			break
@@ -31,16 +31,4 @@ func probeURL(url string, maxTries int) Ping {
 		TransportError: err,
 		Tries:          tries,
 	}
-}
-
-func measureURLCall(url string) (*int, time.Duration, error) {
-	start := time.Now()
-	resp, err := http.Get(url)
-	duration := time.Since(start)
-
-	if err != nil {
-		return nil, duration, err
-	}
-
-	return &resp.StatusCode, duration, nil
 }

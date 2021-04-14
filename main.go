@@ -13,20 +13,22 @@ import (
 const nbTriesPerURL = 3
 
 func main() {
-	data, err := ioutil.ReadFile("./urls.txt")
+	data, err := ioutil.ReadFile("/Users/jeromeschneider/Code/rampup/urls.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	urls, err := getURLs(data)
+	urls, err := getURLList(data)
 	if err != nil {
 		panic(err)
 	}
+
+	urlGetter := URLGetterReal{}
 
 	for round := 1; round <= 10; round++ {
 		println("# ROUND ", round)
 		for _, url := range urls {
-			ping := probeURL(url, nbTriesPerURL)
+			ping := probeURL(url, nbTriesPerURL, urlGetter)
 			fmt.Printf("%+v\n", ping)
 		}
 	}
