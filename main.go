@@ -37,7 +37,7 @@ func main() {
 }
 
 func getURLs() ([]string, error) {
-	data, err := ioutil.ReadFile("./urls.txt")
+	data, err := ioutil.ReadFile("/Users/jeromeschneider/Code/rampup/urls.txt")
 	if err != nil {
 		return nil, err
 	}
